@@ -8,7 +8,6 @@ A blog generator made with Haskell.
 git clone git@github.com:augustohdias/whoareu.git     # ssh
 git clone https://github.com/augustohdias/whoareu.git # http
 cd whoareu
-stack build
 stack install # Will install it inside ~/.local/bin/ directory. Make sure it is also inside your PATH.
 ```
 
