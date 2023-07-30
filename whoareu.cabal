@@ -48,7 +48,7 @@ library
     , text
   default-language: Haskell2010
 
-executable whoareu-exe
+executable whoareu
   main-is: Main.hs
   other-modules:
       Paths_whoareu

@@ -44,8 +44,9 @@ library:
   source-dirs: src
 
 executables:
-  whoareu-exe:
+  whoareu:
     main:                Main.hs
+    name:                whoareu
     source-dirs:         app
     ghc-options:
     - -threaded
