@@ -19,12 +19,12 @@ _STYLE :: H.Attribute
 _STYLE = A.style $ mconcat
   [ "background-color: black;"
   , "color: white;"
-  , "padding: 10px;"
-  , "width: 400px;"
-  , "margin: 10px;"
+  , "padding: 15px;"
+  , "width: 600px;"
+  , "margin: 15px;"
   , "border-radius: 10px;"
   , "font-family: 'Courrier new', monospace;"
-  , "font-size: 10px;"
+  , "font-size: 12px;"
   , "text-align: justify;"
   , "display: flex;"
   , "flex-direction: column;"
@@ -35,7 +35,9 @@ _STYLE = A.style $ mconcat
 data Post = Post { htmlContent :: String, date :: String, title :: String }
 
 instance BC.Component Post where
-  renderHtml p = H.div H.! _STYLE $ H.preEscapedString $ htmlContent p
+  renderHtml p = H.div H.! _STYLE $ do
+    H.preEscapedString $ htmlContent p 
+    H.a H.! A.href "../index.html" $ "<< back"
   parseTemplate template = Post { htmlContent = BT.html template, title = BT.title h, date = BT.date h }
     where h = BT.header template
 
@@ -69,7 +71,7 @@ getPostPath :: Post -> String
 getPostPath post = "./posts/" ++ date post ++ "-" ++ replaceSpaces (title post) ++ ".html"
 
 toHyperLink :: Post -> H.Html
-toHyperLink post = H.div H.! A.style "display: flex; justify-content: space-between; min-height: 20px; font-size: 11px; padding: 10px; margin: 10px;" $ do
+toHyperLink post = H.div H.! A.style "display: flex; justify-content: space-between; min-height: 20px; font-size: 12px; padding: 15px; margin: 15px;" $ do
     H.a H.! A.href (H.stringValue (getPostPath post)) $ H.toHtml $ title post
     H.toHtml $ " :: " ++ date post
 

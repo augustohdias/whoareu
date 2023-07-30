@@ -23,11 +23,14 @@ getHeader = processContent Prelude.take
 readMarkdownToHTML :: String -> IO String
 readMarkdownToHTML markdown = do
   eitherResult <- runIO $ do
-    doc <- readMarkdown def $ T.pack markdown
+    doc <- readMarkdown myReaderOptions $ T.pack markdown
     writeHtml5String def doc
   case eitherResult of
     Right html -> return . T.unpack $ html
     Left err   -> throwIO $ userError $ show err
+
+myReaderOptions :: ReaderOptions
+myReaderOptions = def { readerExtensions = enableExtension Ext_strikeout $ readerExtensions def }
 
 readFromString :: String -> IO BlogElementTemplate
 readFromString content = do

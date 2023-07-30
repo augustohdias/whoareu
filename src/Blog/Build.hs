@@ -42,7 +42,7 @@ build :: IO ()
 build = do
     profile <- Profile.build
     posts <- Posts.build
-    mapM_ (write profile) posts
+    mapM_ (write profile) posts -- Render and writes post pages
     let links = Posts.borrowStyle $ mconcat $ Prelude.map Posts.toHyperLink posts
     let page = renderPage profile links
     writeFile "index.html" page
@@ -60,7 +60,7 @@ renderPage profileContent bodyContent = renderHtml $ docTypeHtml $ do
           "a:active {color: grey;}"
           )]
       H.title "who am i?" 
-    H.body ! (A.style $ mconcat
+    H.body ! A.style ( mconcat
                 [ "background-image: url(https://augustohdias.github.io/whoami/resources/background/bg_0.jpg);"
                 , "background-size: cover;"
                 , "background-attachment: fixed;"

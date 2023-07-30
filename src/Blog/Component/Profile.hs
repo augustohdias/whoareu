@@ -12,11 +12,11 @@ _STYLE = A.style $ mconcat
   [ "background-color: black;"
   , "color: white;"
   , "padding: 10px;"
-  , "width: 250px;"
-  , "margin: 10px;"
-  , "border-radius: 10px;"
+  , "width: 375px;"
+  , "margin: 15px;"
+  , "border-radius: 15px;"
   , "font-family: 'Courrier new', monospace;"
-  , "font-size: 10px;"
+  , "font-size: 12px;"
   , "text-align: justify;"
   , "display: flex;"
   , "flex-direction: column;"
@@ -31,7 +31,9 @@ _DEFAULT = "---\ntype: ProfileInfo\n\n\n---\n# Hello, World!\nMy name is Bloggy 
 newtype Profile = Profile { htmlContent :: String }
 
 instance BC.Component Profile where
-  renderHtml p = H.div H.! _STYLE $ H.preEscapedString $ htmlContent p
+  renderHtml p = H.div H.! _STYLE $ do 
+    H.preEscapedString $ htmlContent p 
+    
   parseTemplate template = Profile { htmlContent = BT.html template }
 
 build :: IO H.Html
