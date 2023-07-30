@@ -1,0 +1,11 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "whoareu:lib"
+    - path: "./app"
+      component: "whoareu:exe:whoareu-exe"
+    - path: "./test"
+      component: "whoareu:test:whoareu-test"
+none:
+  - path: "./Setup.hs"
+
