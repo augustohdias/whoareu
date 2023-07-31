@@ -1,13 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GADTs #-}
 
 module Blog.Setup.Load (
-  Element(header, body)
-, Header(elementType, date, title, extra)
-, ElementType(Post, Profile, Custom)
-, getProfile
-, getPosts
-, empty
-, extractElement
+  Element (..)
+, Header (..)
+, ElementType (..)
+, Rendered
+, Renderable
 , markdownToHtml
 ) where
 
@@ -18,33 +17,29 @@ import qualified Text.Parsec.String as Par.String (Parser)
 
 data ElementType = Post | Profile | Custom 
   deriving (Show, Eq)
+
 data Header = Header { elementType:: ElementType, date :: String, title :: String, extra :: [(String, [String])] }
   deriving (Show, Eq)
-data Element = Element { header :: Header, body :: String }
-  deriving (Show, Eq)
 
-extractElement :: String -> Element
-extractElement contents = case header of
-  Right h -> Element {header=h, body=body}
-  _       -> Element {header=Header {elementType=Post, date="01-01-01", title="algo errado", extra=[("",[])]}, body=""}
-  where
-    header = Par.parse parseHeader "" contents
-    body = unlines . drop 5 . lines $ contents
+data Element a where
+  ElementPost     :: { body :: String, header :: Header } -> Element ElementType
+  ElementProfile  :: { body :: String, header :: Header } -> Element ElementType
 
-filterByElementType :: ElementType -> [Element] -> [Element]
-filterByElementType et = filter ((== et) . elementType . header)
+data Rendered a where
+  RenderedPost    :: { html :: String } -> Rendered ElementType
+  RenderedProfile :: { html :: String } -> Rendered ElementType
 
-getPosts :: [Element] -> [Element]
-getPosts = filterByElementType Post
+class Renderable a where
+  render :: Element a -> Rendered a
 
-getProfile :: [Element] -> Maybe Element
-getProfile l = maybeProfile $ filterByElementType Profile l
-  where
-    maybeProfile (p:_) = Just p
-    maybeProfile []    = Nothing
-
-empty :: Element
-empty = Element {header=Header{elementType=Profile,title="",date="",extra=[("",[])]}, body="wada"}
+instance Renderable (Element ElementType) where
+  render :: Element a -> Rendered a
+  render (ElementPost body _) = case markdownToHtml body of
+    Just html -> RenderedPost { html = html }
+    _ -> RenderedPost { html = "" }
+  render (ElementProfile body _) = case markdownToHtml body of
+    Just html -> RenderedProfile { html = html }
+    _ -> RenderedProfile {html = "" }
 
 --- Render
 
