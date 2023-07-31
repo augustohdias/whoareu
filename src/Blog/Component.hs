@@ -9,6 +9,6 @@ import           Prelude          hiding (read)
 import qualified Text.Blaze.Html5 as H
 
 class Component a where
-  load    :: Element -> a
+  load    :: Element ElementType -> a
   render  :: a -> H.Html
 

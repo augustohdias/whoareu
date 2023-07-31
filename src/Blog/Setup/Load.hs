@@ -5,8 +5,8 @@ module Blog.Setup.Load (
   Element (..)
 , Header (..)
 , ElementType (..)
-, Rendered
-, Renderable
+, Rendered (..)
+, Renderable (..)
 , markdownToHtml
 ) where
 
@@ -25,23 +25,24 @@ data Element a where
   ElementPost     :: { body :: String, header :: Header } -> Element ElementType
   ElementProfile  :: { body :: String, header :: Header } -> Element ElementType
 
+--- Render
+
 data Rendered a where
-  RenderedPost    :: { html :: String } -> Rendered ElementType
-  RenderedProfile :: { html :: String } -> Rendered ElementType
+  RenderedPost    :: { html :: String } -> Rendered (Element ElementType)
+  RenderedProfile :: { html :: String } -> Rendered (Element ElementType)
 
 class Renderable a where
-  render :: Element a -> Rendered a
+  render :: a -> Rendered a
 
 instance Renderable (Element ElementType) where
-  render :: Element a -> Rendered a
+  render :: Element ElementType -> Rendered (Element ElementType)
   render (ElementPost body _) = case markdownToHtml body of
     Just html -> RenderedPost { html = html }
     _ -> RenderedPost { html = "" }
+
   render (ElementProfile body _) = case markdownToHtml body of
     Just html -> RenderedProfile { html = html }
     _ -> RenderedProfile {html = "" }
-
---- Render
 
 readerOptions :: Pan.ReaderOptions
 readerOptions = Pan.def { Pan.readerExtensions = Pan.enableExtension Pan.Ext_raw_html .Pan.enableExtension Pan.Ext_strikeout $ Pan.readerExtensions Pan.def }

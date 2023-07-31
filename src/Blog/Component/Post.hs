@@ -1,12 +1,35 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE MonoLocalBinds #-}
 
-module Blog.Component.Post (_DEFAULT, Post, date, title, pathOf, hyperlinkOf, borrowStyle, load) where
+module Blog.Component.Post (_DEFAULT, _STYLE) where
 
-import           Blog.Component
-import qualified Blog.Setup.Load             as L
 import           Prelude                     hiding (read)
 import qualified Text.Blaze.Html5            as H
 import qualified Text.Blaze.Html5.Attributes as A
+import Blog.Setup.Load (markdownToHtml,
+  Element(ElementPost, ElementProfile), ElementType, Renderable(render), Rendered(RenderedPost, html))
+
+{-
+blazeComponent p = H.div H.! _STYLE $ do
+  H.preEscapedString $ html p
+  H.a H.! A.href "../index.html" $ "<<<"
+
+replaceSpaces :: String -> String
+replaceSpaces = Prelude.map (\c -> if c == ' ' then '-' else c)
+
+pathOf :: Element ElementType -> String
+pathOf post = "./posts/" ++ date post ++ "-" ++ replaceSpaces (title post) ++ ".html"
+
+referenceFor :: Element ElementType -> H.Html
+referenceFor (ElementPost body _) = H.div 
+  H.! A.style "display: flex; justify-content: space-between; min-height: 20px; font-size: 12px; padding: 15px; margin: 15px;" $ do
+    H.a H.! A.href (H.stringValue (pathOf post)) $ H.toHtml $ title post
+    H.toHtml $ " :: " ++ date post
+
+borrowStyle :: H.Html -> H.Html
+borrowStyle = H.div H.! _STYLE
+-}
 
 _DEFAULT :: String
 _DEFAULT= "---\ntype: BlogPost\ndate: 29.07.23\ntitle: Post title\n---\n# Titulo\n\nWada wada wada wadawada wadawadawada wada a wada."
@@ -27,34 +50,4 @@ _STYLE = A.style $ mconcat
   , "flex-grow: 0;"
   , "flex-shrink: 0;"
   ]
-
-data Post = Post { html  :: String, date  :: String, title :: String }
-
-instance Component Post where
-  render p = H.div H.! _STYLE $ do
-    H.preEscapedString $ html p
-    H.a H.! A.href "../index.html" $ "<<<"
-  load element = Post {
-      html = htmlBody
-    , date = L.date $ L.header element
-    , title = L.title $ L.header element
-    }
-    where
-      htmlBody = case L.markdownToHtml $ L.body element of
-        Just v -> v
-        _      -> ""
-
-replaceSpaces :: String -> String
-replaceSpaces = Prelude.map (\c -> if c == ' ' then '-' else c)
-
-pathOf :: Post -> String
-pathOf post = "./posts/" ++ date post ++ "-" ++ replaceSpaces (title post) ++ ".html"
-
-hyperlinkOf :: Post -> H.Html
-hyperlinkOf post = H.div H.! A.style "display: flex; justify-content: space-between; min-height: 20px; font-size: 12px; padding: 15px; margin: 15px;" $ do
-    H.a H.! A.href (H.stringValue (pathOf post)) $ H.toHtml $ title post
-    H.toHtml $ " :: " ++ date post
-
-borrowStyle :: H.Html -> H.Html
-borrowStyle = H.div H.! _STYLE
 

@@ -1,20 +1,23 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GADTs #-}
 
-module Blog.Build (build) where
+module Blog.Build (render) where
 
-import           Blog.Component                  (Component (load, render))
-import           Blog.Component.Post             (hyperlinkOf)
-import qualified Blog.Component.Post             as Post
-import qualified Blog.Component.Profile          as Profile
-import qualified Blog.Setup.Load                 as L (Element, extractElement,
-                                                       getPosts, getProfile)
-import           Control.Exception               (IOException, try)
-import qualified Data.List                       as DL
-import           System.Directory                (listDirectory)
-import           System.FilePath                 ((</>))
-import           Text.Blaze.Html.Renderer.String (renderHtml)
-import qualified Text.Blaze.Html5                as H hiding (main)
-import qualified Text.Blaze.Html5.Attributes     as A hiding (name)
+import qualified Text.Blaze.Html5               as H
+import qualified Text.Blaze.Html5.Attributes    as A
+import Blog.Setup.Load (Renderable(..), Rendered(..), ElementType)
+
+
+
+data Page a where
+  PostPage    :: { profile :: Rendered ElementType, post   :: a}    -> Page (Rendered ElementType)
+  IndexPage   :: { profile :: Rendered ElementType, links  :: [a]}  -> Page (Rendered ElementType)
+  CustomPage  :: {} -> Page ElementType
+
+instance Renderable (Page (Rendered ElementType)) where
+  render (PostPage _ _) = undefined
+  render (IndexPage _ _) = undefined
+  render (CustomPage) = undefined
 
 _STYLE :: H.Attribute
 _STYLE = A.style $ mconcat
@@ -45,6 +48,7 @@ _POSTS_BOX_STYLE = A.style $ mconcat
   , "overflow: hidden"
   ]
 
+{-- Assembly the entire blog
 listMarkdownFiles :: [FilePath] -> IO [FilePath]
 listMarkdownFiles [] = return []
 listMarkdownFiles (x:xs) = do
@@ -70,7 +74,6 @@ extractElements = do
     Just profile -> return (profile, posts)
     _            -> return (Profile.defaultProfile, posts)
 
--- Assembly the entire blog
 
 build :: IO ()
 build = do
@@ -112,4 +115,4 @@ renderPage profileContent bodyContent = renderHtml $ H.docTypeHtml $ do
     H.div H.! _STYLE $ do
       H.div H.! _PROFILE_BOX_STYLE  $ profileContent
       H.div H.! _POSTS_BOX_STYLE    $ bodyContent
-
+--}
