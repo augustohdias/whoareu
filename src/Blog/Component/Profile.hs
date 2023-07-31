@@ -1,9 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Blog.Component.Profile (_DEFAULT, build) where
+module Blog.Component.Profile (_DEFAULT, defaultProfile, Profile) where
 
 import qualified Blog.Component              as BC
-import qualified Blog.Setup.Template         as BT
+import qualified Blog.Setup.Load             as L
 import qualified Text.Blaze.Html5            as H hiding (main)
 import qualified Text.Blaze.Html5.Attributes as A
 
@@ -28,19 +28,19 @@ _STYLE = A.style $ mconcat
 _DEFAULT :: String
 _DEFAULT = "---\ntype: ProfileInfo\n\n\n---\n# Hello, World!\nMy name is Bloggy Blogger and I'm writing a new blog."
 
-newtype Profile = Profile { htmlContent :: String }
+newtype Profile = Profile { content :: String }
 
 instance BC.Component Profile where
-  renderHtml p = H.div H.! _STYLE $ do 
-    H.preEscapedString $ htmlContent p 
-    
-  parseTemplate template = Profile { htmlContent = BT.html template }
+  render p = H.div H.! _STYLE $ do
+    H.preEscapedString $ content p
 
-build :: IO H.Html
-build = do
-  maybeProfile    <- BC.loadFromFile "./profile/Info.md" :: IO (Maybe Profile)
-  defaultProfile  <- BT.readFromString _DEFAULT
-  case maybeProfile of
-    Just profile  -> return $ BC.renderHtml profile
-    Nothing -> return $ BC.renderHtml (BC.parseTemplate defaultProfile :: Profile)
+  load element = Profile {
+    content =
+      case L.markdownToHtml $ L.body element of
+        Just e -> e
+        _      -> ""
+  }
+
+defaultProfile :: L.Element
+defaultProfile = L.empty
 

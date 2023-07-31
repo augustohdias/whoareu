@@ -3,7 +3,7 @@
 
 module Blog.Setup (setup) where
 
-import qualified Blog.Component.Posts   as P
+import qualified Blog.Component.Post    as P
 import qualified Blog.Component.Profile as PI
 import           System.Directory       (createDirectoryIfMissing)
 import           System.FilePath        ((</>))

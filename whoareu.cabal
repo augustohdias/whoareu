@@ -28,10 +28,12 @@ library
       Blog
       Blog.Build
       Blog.Component
-      Blog.Component.Posts
+      Blog.Component.Post
       Blog.Component.Profile
       Blog.Setup
-      Blog.Setup.Template
+      Blog.Setup.Load
+      Blog.Setup.Write
+      Refactoring
   other-modules:
       Paths_whoareu
   hs-source-dirs:
