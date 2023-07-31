@@ -79,7 +79,7 @@ parseHeader = do
 --}
     _ <- Par.string "---"
     _ <- Par.endOfLine
-    return $ Header (toElementType $ filter (/= ' ') fileType) (filter (/= ' ') date) (filter (/= ' ') title) [("",[])]
+    return $ Header (toElementType $ filter (/= ' ') fileType) (filter (/= ' ') date) title [("",[])]
     where
       toElementType s
         | s == "Post" = Post
