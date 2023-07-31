@@ -29,6 +29,7 @@ _DEFAULT :: String
 _DEFAULT = "---\ntype: ProfileInfo\n\n\n---\n# Hello, World!\nMy name is Bloggy Blogger and I'm writing a new blog."
 
 newtype Profile = Profile { content :: String }
+  deriving (Eq, Show)
 
 instance BC.Component Profile where
   render p = H.div H.! _STYLE $ do

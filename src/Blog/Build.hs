@@ -63,6 +63,7 @@ extractElements = do
   mapM_ putStrLn files
   contentsList <- mapM readFile files
   let elements = map L.extractElement contentsList
+  mapM_ print elements
   let posts = L.getPosts elements
   let maybeProfile = L.getProfile elements
   case maybeProfile of

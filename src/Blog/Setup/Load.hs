@@ -16,7 +16,7 @@ import qualified Text.Pandoc        as Pan
 import qualified Text.Parsec        as Par
 import qualified Text.Parsec.String as Par.String (Parser)
 
-data ElementType = Post | Profile | Custom
+data ElementType = Post | Profile | Custom 
   deriving (Show, Eq)
 data Header = Header { elementType:: ElementType, date :: String, title :: String, extra :: [(String, [String])] }
   deriving (Show, Eq)
@@ -29,7 +29,7 @@ extractElement contents = case header of
   _       -> Element {header=Header {elementType=Post, date="01-01-01", title="algo errado", extra=[("",[])]}, body=""}
   where
     header = Par.parse parseHeader "" contents
-    body = drop 5 contents
+    body = unlines . drop 5 . lines $ contents
 
 filterByElementType :: ElementType -> [Element] -> [Element]
 filterByElementType et = filter ((== et) . elementType . header)
@@ -48,15 +48,17 @@ empty = Element {header=Header{elementType=Profile,title="",date="",extra=[("",[
 
 --- Render
 
+readerOptions :: Pan.ReaderOptions
+readerOptions = Pan.def { Pan.readerExtensions = Pan.enableExtension Pan.Ext_raw_html .Pan.enableExtension Pan.Ext_strikeout $ Pan.readerExtensions Pan.def }
+
 markdownToHtml :: String -> Maybe String
 markdownToHtml md =
     case Pan.runPure $ do
-        doc <- Pan.readMarkdown Pan.def $ T.pack md
-        html <- Pan.writeHtml5String Pan.def doc
-        return (T.unpack html)
+        doc <- Pan.readMarkdown readerOptions $ T.pack md
+        Pan.writeHtml5String Pan.def doc
     of
         Left _     -> Nothing
-        Right html -> Just (html :: String)
+        Right html -> Just (T.unpack html)
 
 --- Parser
 
@@ -77,7 +79,7 @@ parseHeader = do
 --}
     _ <- Par.string "---"
     _ <- Par.endOfLine
-    return $ Header (toElementType fileType) date title [("",[])]
+    return $ Header (toElementType $ filter (/= ' ') fileType) (filter (/= ' ') date) (filter (/= ' ') title) [("",[])]
     where
       toElementType s
         | s == "Post" = Post
