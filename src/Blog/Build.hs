@@ -1,23 +1,28 @@
+{-# LANGUAGE GADTs             #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE GADTs #-}
 
-module Blog.Build (render) where
+module Blog.Build (build) where
 
-import qualified Text.Blaze.Html5               as H
-import qualified Text.Blaze.Html5.Attributes    as A
-import Blog.Setup.Load (Renderable(..), Rendered(..), ElementType)
+import Blog.Build.Element (Rendered(..), Element(..), Profile, Post, Renderable(..))
+import Blog.Build.Load (loadPosts, loadProfile)
+import           Text.Blaze.Html.Renderer.Pretty (renderHtml)
+import qualified Text.Blaze.Html5                as H
+import qualified Text.Blaze.Html5.Attributes     as A
 
+build :: IO b
+build = do
+  profile <- loadProfile
+  let renderedProfile = render profile :: Rendered (Element Profile)
+  posts <- loadPosts
+  let renderedPosts = map render posts
+  _ <- writePostsPages renderedProfile renderedPosts
+  writeIndexPage renderedProfile renderedPosts
 
+writePostsPages :: Rendered (Element Profile) -> [Rendered (Element Post)] -> IO b
+writePostsPages _ _ = undefined
 
-data Page a where
-  PostPage    :: { profile :: Rendered ElementType, post   :: a}    -> Page (Rendered ElementType)
-  IndexPage   :: { profile :: Rendered ElementType, links  :: [a]}  -> Page (Rendered ElementType)
-  CustomPage  :: {} -> Page ElementType
-
-instance Renderable (Page (Rendered ElementType)) where
-  render (PostPage _ _) = undefined
-  render (IndexPage _ _) = undefined
-  render (CustomPage) = undefined
+writeIndexPage :: Rendered (Element Profile) -> [Rendered a] -> IO b
+writeIndexPage _ _ = undefined
 
 _STYLE :: H.Attribute
 _STYLE = A.style $ mconcat
@@ -38,7 +43,6 @@ _PROFILE_BOX_STYLE = A.style $ mconcat
   , "overflow: hidden"
   ]
 
-
 _POSTS_BOX_STYLE :: H.Attribute
 _POSTS_BOX_STYLE = A.style $ mconcat
   [ "display: flex;"
@@ -49,32 +53,6 @@ _POSTS_BOX_STYLE = A.style $ mconcat
   ]
 
 {-- Assembly the entire blog
-listMarkdownFiles :: [FilePath] -> IO [FilePath]
-listMarkdownFiles [] = return []
-listMarkdownFiles (x:xs) = do
-  result <- try (listDirectory x) :: IO (Either IOException [FilePath])
-  case result of
-    Left _ -> listMarkdownFiles xs
-    Right names -> do
-      let mdFiles = filter (".md" `DL.isSuffixOf`) (Prelude.map (x </>) names)
-      rest <- listMarkdownFiles xs
-      return $ mdFiles ++ rest
-
-extractElements :: IO (L.Element, [L.Element])
-extractElements = do
-  files <- listMarkdownFiles ["./profile", "./posts"]
-  putStrLn "Files found: "
-  mapM_ putStrLn files
-  contentsList <- mapM readFile files
-  let elements = map L.extractElement contentsList
-  mapM_ print elements
-  let posts = L.getPosts elements
-  let maybeProfile = L.getProfile elements
-  case maybeProfile of
-    Just profile -> return (profile, posts)
-    _            -> return (Profile.defaultProfile, posts)
-
-
 build :: IO ()
 build = do
   elements <- extractElements
@@ -94,10 +72,9 @@ build = do
 
     write :: H.Html -> Post.Post -> IO ()
     write profile post = writeFile (Post.pathOf post) (renderPage profile (render post))
+--}
 
--- Render a page
-
-renderPage :: H.Html -> H.Html -> String
+renderPage :: String -> String -> String
 renderPage profileContent bodyContent = renderHtml $ H.docTypeHtml $ do
   H.head $ do
     H.style $ mconcat [H.preEscapedToHtml (
@@ -113,6 +90,5 @@ renderPage profileContent bodyContent = renderHtml $ H.docTypeHtml $ do
               , "background-attachment: fixed;"
               ]) $ do
     H.div H.! _STYLE $ do
-      H.div H.! _PROFILE_BOX_STYLE  $ profileContent
-      H.div H.! _POSTS_BOX_STYLE    $ bodyContent
---}
+      H.div H.! _PROFILE_BOX_STYLE  $ H.preEscapedToHtml profileContent
+      H.div H.! _POSTS_BOX_STYLE    $ H.preEscapedToHtml bodyContent
